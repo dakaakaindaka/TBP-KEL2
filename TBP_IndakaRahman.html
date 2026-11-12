@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GradeFlow — Smart Academic Dashboard & Sertifikat</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: rgba(255,255,255,.86);
+      --surface-solid: #ffffff;
+      --surface-soft: #f8f9fd;
+      --text: #172033;
+      --muted: #8b95a7;
+      --line: #e8ebf2;
+      --primary: #6759e8;
+      --primary-2: #927cf7;
+      --primary-soft: #eeecff;
+      --success: #16a477;
+      --success-soft: #e2f8ef;
+      --warning: #d18a13;
+      --warning-soft: #fff4da;
+      --danger: #d84e68;
+      --danger-soft: #ffe8ed;
+      --sidebar: #171d31;
+      --sidebar-muted: #8791ae;
+      --shadow: 0 18px 50px rgba(31, 42, 73, .09);
+      --radius: 22px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #101522;
+      --surface: rgba(27,34,55,.86);
+      --surface-solid: #1b2237;
+      --surface-soft: #222a42;
+      --text: #f4f6ff;
+      --muted: #9ca6bd;
+      --line: #303950;
+      --primary-soft: #2d2b5e;
+      --sidebar: #0b0f1c;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .22);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; color: var(--text); background: var(--bg); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; transition: background .25s, color .25s; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    /* Login Screen */
+    .auth-wrapper { display: grid; place-items: center; min-height: 100vh; padding: 20px; background: radial-gradient(circle at top right, var(--primary-soft), var(--bg)); }
+    .auth-card { width: min(420px, 100%); padding: 36px; border: 1px solid var(--line); border-radius: 28px; background: var(--surface-solid); box-shadow: var(--shadow); }
+    .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .auth-brand-mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; overflow: hidden; background: white; border: 1px solid var(--line); }
+    .auth-brand-mark img { width: 100%; height: 100%; object-fit: contain; }
+    .auth-title { font-size: 21px; font-weight: 850; letter-spacing: -.03em; margin: 0; }
+    .auth-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; background: var(--surface-soft); padding: 4px; border-radius: 14px; border: 1px solid var(--line); }
+    .role-tab { padding: 10px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 800; transition: .2s; }
+    .role-tab.active { background: var(--surface-solid); color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+    .auth-form { display: grid; gap: 14px; }
+    .auth-field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
+    .auth-field input { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; outline: none; color: var(--text); background: var(--surface-soft); font-size: 13px; }
+    .auth-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+    /* App Layout */
+    .app { display: flex; min-height: 100vh; }
+    .sidebar { width: 248px; padding: 25px 15px; color: white; background: var(--sidebar); display: flex; flex-direction: column; position: fixed; inset: 0 auto 0 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 12px 34px; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; overflow: hidden; background: white; flex-shrink: 0; }
+    .brand-mark img { width: 100%; height: 100%; object-fit: contain; }
+    .brand-name { font-size: 16px; font-weight: 850; letter-spacing: -.03em; }
+    .brand-sub { margin-top: 2px; color: #8791ae; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    .nav-label { margin: 0 12px 10px; color: #68728d; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 13px; border: 0; border-radius: 13px; color: var(--sidebar-muted); background: transparent; text-align: left; transition: .2s ease; }
+    .nav-item:hover, .nav-item.active { color: white; background: linear-gradient(90deg, rgba(103,89,232,.95), rgba(103,89,232,.45)); }
+    .nav-icon { width: 19px; text-align: center; font-size: 17px; }
+    .sidebar-bottom { margin-top: auto; padding: 16px; border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: rgba(255,255,255,.05); }
+    .sidebar-bottom p { margin: 0 0 12px; color: #c7cee0; font-size: 12px; line-height: 1.55; }
+    .mini-progress { height: 6px; overflow: hidden; border-radius: 99px; background: #303852; }
+    .mini-progress span { display: block; width: 72%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6f63ed, #a383ff); transition: width .3s ease; }
+
+    /* Main Content */
+    .main { width: calc(100% - 248px); margin-left: 248px; padding: 26px 34px 42px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 28px; }
+    .crumb { color: var(--muted); font-size: 13px; }
+    .crumb strong { color: var(--text); }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 13px; color: var(--muted); background: var(--surface-solid); transition: .2s ease; }
+    .icon-btn:hover { color: var(--primary); border-color: var(--primary); transform: translateY(-2px); }
+    .user { display: flex; align-items: center; gap: 10px; padding-left: 8px; }
+    .avatar { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; color: white; background: linear-gradient(135deg, #6759e8, #a283ff); font-size: 12px; font-weight: 850; }
+    .user-name { font-size: 13px; font-weight: 800; }
+    .user-role { margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+    /* View Switching */
+    .view-section { display: none; animation: fadeIn .25s ease; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .hero { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 25px; }
+    .eyebrow { color: var(--primary); font-size: 11px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 8px 0 8px; font-size: clamp(28px, 4vw, 44px); line-height: 1.08; letter-spacing: -.05em; }
+    .hero p { margin: 0; max-width: 600px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .date-pill { padding: 12px 15px; border: 1px solid var(--line); border-radius: 14px; color: var(--muted); background: var(--surface-solid); font-size: 12px; white-space: nowrap; }
+
+    /* Cards & Stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 18px; }
+    .card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); backdrop-filter: blur(14px); }
+    .stat { position: relative; overflow: hidden; padding: 20px; }
+    .stat::after { content: ""; position: absolute; width: 90px; height: 90px; right: -30px; bottom: -30px; border-radius: 50%; background: var(--primary-soft); }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .stat-icon { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 10px; color: var(--primary); background: var(--primary-soft); font-size: 15px; }
+    .stat-value { position: relative; z-index: 1; margin-top: 11px; font-size: 30px; font-weight: 900; letter-spacing: -.045em; }
+    .stat-foot { position: relative; z-index: 1; margin-top: 5px; color: var(--muted); font-size: 11px; }
+    .up { color: var(--success); font-weight: 800; }
+    .down { color: var(--danger); font-weight: 800; }
+
+    /* Charts */
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr); gap: 18px; margin-bottom: 18px; }
+    .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 22px 14px; }
+    .panel-title { margin: 0; font-size: 17px; letter-spacing: -.02em; }
+    .panel-subtitle { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .chart-card { min-height: 285px; }
+    .chart { display: flex; align-items: flex-end; gap: 20px; height: 180px; margin: 10px 25px 20px; padding: 12px 10px 0; border-bottom: 1px solid var(--line); background: repeating-linear-gradient(to bottom, transparent 0, transparent 43px, var(--line) 44px); }
+    .bar-wrap { display: flex; flex: 1; height: 100%; align-items: flex-end; justify-content: center; gap: 5px; }
+    .bar { width: 34px; min-height: 6px; border-radius: 9px 9px 0 0; background: linear-gradient(180deg, var(--primary-2), var(--primary)); transition: height .5s cubic-bezier(.2,.7,.2,1); }
+    .bar:hover { filter: brightness(1.12); transform: translateY(-3px); }
+    .bar-label { margin-top: 8px; color: var(--muted); font-size: 11px; font-weight: 700; text-align: center; }
+    .legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; color: var(--muted); font-size: 11px; padding-bottom: 16px; }
+    .legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 3px; background: var(--primary); }
+
+    .insight-card { min-height: 285px; padding-bottom: 21px; }
+    .donut-wrap { display: grid; place-items: center; margin: 7px 0 15px; }
+    .donut { display: grid; place-items: center; width: 137px; height: 137px; border-radius: 50%; background: conic-gradient(var(--success) 0 40%, var(--primary) 40% 75%, var(--warning) 75% 90%, var(--danger) 90% 100%); position: relative; }
+    .donut::after { content: ""; position: absolute; width: 90px; height: 90px; border-radius: 50%; background: var(--surface-solid); }
+    .donut-center { position: relative; z-index: 1; text-align: center; }
+    .donut-center strong { display: block; font-size: 25px; }
+    .donut-center small { color: var(--muted); font-size: 10px; }
+    .grade-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 22px; }
+    .grade-row { display: flex; justify-content: space-between; padding: 8px 10px; border-radius: 10px; background: var(--surface-soft); font-size: 11px; }
+    .grade-row b { color: var(--text); }
+    .grade-row span { color: var(--muted); }
+
+    /* Tables & Controls */
+    .table-card { overflow: hidden; }
+    .table-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 22px 16px; }
+    .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn { border: 1px solid var(--line); border-radius: 11px; padding: 10px 14px; color: var(--text); background: var(--surface-solid); font-size: 12px; font-weight: 750; transition: .2s ease; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:hover { color: var(--primary); border-color: var(--primary); transform: translateY(-2px); }
+    .btn-primary { border: 0; color: white; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 8px 18px rgba(103,89,232,.2); }
+    .btn-primary:hover { color: white; filter: brightness(1.06); }
+    .btn-success { border: 0; color: white; background: linear-gradient(135deg, #16a477, #20c997); box-shadow: 0 8px 18px rgba(22,164,119,.25); }
+    .btn-success:hover { color: white; filter: brightness(1.06); }
+    .btn-danger { border-color: var(--danger-soft); color: var(--danger); background: var(--danger-soft); }
+    .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+    .search { width: 185px; border: 1px solid var(--line); border-radius: 11px; padding: 10px 12px; outline: none; color: var(--text); background: var(--surface-soft); font-size: 12px; }
+    .search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+    .table-scroll { overflow-x: auto; padding: 0 22px 18px; }
+    table { width: 100%; min-width: 780px; border-collapse: collapse; }
+    th { padding: 12px 10px; border-bottom: 1px solid var(--line); color: var(--muted); text-align: left; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    td { padding: 14px 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
+    tbody tr { transition: .18s ease; }
+    tbody tr:hover { background: var(--surface-soft); }
+    .student { display: flex; align-items: center; gap: 9px; font-weight: 800; }
+    .student-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; color: var(--primary); background: var(--primary-soft); font-size: 10px; font-weight: 900; }
+    .score { font-weight: 800; }
+    .att-badge { display: inline-block; padding: 4px 8px; border-radius: 7px; font-size: 11px; font-weight: 750; background: var(--primary-soft); color: var(--primary); }
+    .grade { display: inline-flex; min-width: 28px; justify-content: center; padding: 5px 7px; border-radius: 8px; font-weight: 900; }
+    .grade-A, .grade-B { color: var(--success); background: var(--success-soft); }
+    .grade-C { color: var(--warning); background: var(--warning-soft); }
+    .grade-D { color: var(--danger); background: var(--danger-soft); }
+    .action-group { display: flex; gap: 6px; }
+    .action-btn { border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; background: var(--surface-solid); color: var(--muted); font-size: 12px; transition: .15s; }
+    .action-btn:hover { color: var(--primary); border-color: var(--primary); }
+    .action-btn.delete:hover { color: var(--danger); border-color: var(--danger); }
+    .empty { padding: 38px; color: var(--muted); text-align: center; }
+    .empty strong { display: block; margin-bottom: 5px; color: var(--text); font-size: 15px; }
+
+    /* Attendance Interactive Grid 16 Meetings */
+    .att-box { background: var(--surface-soft); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+    .att-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .att-preview-pill { font-size: 11px; font-weight: 800; color: var(--primary); background: var(--primary-soft); padding: 4px 9px; border-radius: 8px; }
+    .att-checks-16 { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+    .att-check-btn { border: 1px solid var(--line); background: var(--surface-solid); color: var(--muted); border-radius: 7px; padding: 6px 0; font-size: 11px; font-weight: 800; text-align: center; transition: .15s; }
+    .att-check-btn.present { background: var(--success); color: white; border-color: var(--success); }
+
+    /* History & Settings */
+    .history-list { padding: 0 22px 22px; display: grid; gap: 10px; }
+    .history-item { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px; background: var(--surface-soft); border: 1px solid var(--line); }
+    .history-left { display: flex; align-items: center; gap: 12px; }
+    .history-badge { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+    .badge-add { background: var(--success-soft); color: var(--success); }
+    .badge-edit { background: var(--primary-soft); color: var(--primary); }
+    .badge-del { background: var(--danger-soft); color: var(--danger); }
+    .badge-sys { background: var(--warning-soft); color: var(--warning); }
+    .history-title { font-size: 13px; font-weight: 750; }
+    .history-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .history-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+    .settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .settings-card { padding: 22px; }
+    .settings-card h3 { margin: 0 0 4px; font-size: 16px; }
+    .settings-card p { margin: 0 0 18px; font-size: 12px; color: var(--muted); }
+    .field-group { display: grid; gap: 14px; }
+    .field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .field input { width: 100%; border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; outline: none; color: var(--text); background: var(--surface-soft); font-size: 13px; }
+    .weight-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .weight-summary { padding: 10px 12px; border-radius: 10px; background: var(--surface-soft); font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Modal & Toast */
+    .modal-layer { display: none; position: fixed; inset: 0; z-index: 30; place-items: center; padding: 20px; background: rgba(11,15,28,.48); backdrop-filter: blur(7px); overflow-y: auto; }
+    .modal-layer.show { display: grid; }
+    .modal { width: min(520px, 100%); border: 1px solid var(--line); border-radius: 24px; background: var(--surface-solid); box-shadow: 0 25px 80px rgba(0,0,0,.25); animation: pop .22s ease; }
+    .modal.cert-modal { width: min(760px, 100%); }
+    @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 22px 24px 10px; }
+    .modal-head h2 { margin: 0; font-size: 19px; }
+    .close { border: 0; color: var(--muted); background: transparent; font-size: 22px; }
+    .form { display: grid; gap: 14px; padding: 10px 24px 24px; }
+    .form label { color: var(--muted); font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 5px; }
+    .form input, .form select { width: 100%; border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; outline: none; color: var(--text); background: var(--surface-soft); }
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .toast { position: fixed; right: 25px; bottom: 25px; z-index: 50; max-width: 330px; padding: 13px 16px; border-radius: 13px; color: white; background: var(--sidebar); box-shadow: var(--shadow); opacity: 0; transform: translateY(15px); pointer-events: none; transition: .25s ease; font-size: 12px; font-weight: 750; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Certificate Design */
+    .cert-preview-wrap { padding: 20px 24px 24px; }
+    .certificate-box {
+      background: #ffffff;
+      color: #172033;
+      border: 10px double #6759e8;
+      border-radius: 12px;
+      padding: 36px 36px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+    .cert-logo { width: 56px; height: 56px; margin: 0 auto 10px; object-fit: contain; }
+    .cert-header { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #6759e8; font-weight: 800; }
+    .cert-main-title { font-size: 28px; font-weight: 900; margin: 8px 0 4px; letter-spacing: -.03em; color: #171d31; }
+    .cert-sub { font-size: 12px; color: #64748b; margin-bottom: 18px; }
+    .cert-student-name { font-size: 26px; font-weight: 850; color: #6759e8; border-bottom: 2px solid #e2e8f0; display: inline-block; padding: 0 20px 4px; margin-bottom: 14px; }
+    .cert-body { font-size: 13px; line-height: 1.6; color: #334155; max-width: 520px; margin: 0 auto 20px; }
+    .cert-metrics { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .cert-metric-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 16px; }
+    .cert-metric-item small { display: block; font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 700; }
+    .cert-metric-item strong { font-size: 16px; color: #171d31; }
+    .cert-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding-top: 14px; border-top: 1px dashed #cbd5e1; font-size: 11px; color: #475569; }
+    .cert-sign { text-align: right; }
+    .cert-sign-line { width: 140px; border-bottom: 1px solid #334155; margin: 24px 0 4px auto; }
+
+    /* Print Media Query */
+    @media print {
+      body * { visibility: hidden; }
+      #certModalLayer, #certModalLayer * { visibility: visible; }
+      #certModalLayer { position: fixed; inset: 0; background: white; padding: 0; display: grid; place-items: center; }
+      .cert-modal { border: 0; box-shadow: none; width: 100%; max-width: 100%; }
+      .no-print { display: none !important; }
+    }
+
+    @media (max-width: 1050px) {
+      .sidebar { width: 82px; padding-inline: 10px; }
+      .main { width: calc(100% - 82px); margin-left: 82px; }
+      .brand { justify-content: center; padding-inline: 0; }
+      .brand-name, .brand-sub, .nav-label, .nav-item span:not(.nav-icon), .sidebar-bottom { display: none; }
+      .nav-item { justify-content: center; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .main { padding: 20px 16px 30px; }
+      .topbar, .hero { align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; justify-content: flex-end; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .table-toolbar { align-items: stretch; flex-direction: column; }
+      .search { width: 100%; }
+      .weight-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HALAMAN LOGIN -->
+  <div class="auth-wrapper" id="authScreen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-brand-mark"><img src="unj.jpg" alt="Logo UNJ" /></div>
+        <div>
+          <h1 class="auth-title">GradeFlow</h1>
+          <div class="auth-sub">UNJ Academic OS</div>
+        </div>
+      </div>
+
+      <div class="role-tabs">
+        <button class="role-tab active" id="tabAdmin" onclick="setLoginRole('admin')">Admin Kelas</button>
+        <button class="role-tab" id="tabStudent" onclick="setLoginRole('student')">Mahasiswa</button>
+      </div>
+
+      <form class="auth-form" id="loginForm">
+        <div class="auth-field">
+          <label for="loginName" id="labelNameInput">Nama Administrator</label>
+          <input id="loginName" required placeholder="Contoh: dakuy..." />
+        </div>
+        <div class="auth-field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" required placeholder="Masukkan password..." />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 6px;">Masuk ke Dashboard →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APLIKASI UTAMA -->
+  <div class="app" id="appScreen" style="display: none;">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><img src="unj.jpg" alt="Logo UNJ" /></div>
+        <div>
+          <div class="brand-name">GradeFlow</div>
+          <div class="brand-sub" id="sidebarRoleSub">UNJ OS</div>
+        </div>
+      </div>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav" id="sidebarNav">
+        <button class="nav-item active" data-page="overview"><span class="nav-icon">⌂</span><span id="navOverviewLabel">Overview</span></button>
+        <button class="nav-item admin-only" data-page="grades"><span class="nav-icon">▦</span><span>Data nilai & absen</span></button>
+        <button class="nav-item admin-only" data-page="history"><span class="nav-icon">◷</span><span>Riwayat</span></button>
+        <button class="nav-item admin-only" data-page="settings"><span class="nav-icon">⚙</span><span>Pengaturan</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <p><strong>Semester aktif</strong><br /><span id="sidebarClassInfo">Pendidikan Teknik Mesin · 2026</span></p>
+        <div class="mini-progress"><span id="sidebarProgress"></span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="crumb">Workspace <span>›</span> <strong id="crumbTitle">Overview</strong></div>
+        <div class="top-actions">
+          <button class="icon-btn" id="themeBtn" title="Ganti tema">☼</button>
+          <button class="icon-btn admin-only" id="exportBtn" title="Export CSV">⇩</button>
+          <button class="icon-btn" id="logoutBtn" title="Keluar Akun" style="color: var(--danger); border-color: var(--danger-soft);">⇥</button>
+          <div class="user">
+            <div class="avatar" id="userAvatar">IR</div>
+            <div>
+              <div class="user-name" id="userNameDisplay">Indaka Rahman</div>
+              <div class="user-role" id="userRoleDisplay">Class manager</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIEW 1: OVERVIEW / REKAP NILAI -->
+      <div class="view-section active" id="page-overview">
+        <section class="hero">
+          <div>
+            <div class="eyebrow" id="heroEyebrow">UNJ Smart Academic Dashboard</div>
+            <h1 id="heroTitle">Kelola performa kelas<br /><span style="color:var(--primary)">dengan lebih tenang.</span></h1>
+            <p id="heroDesc">Pantau kehadiran 16 pertemuan, nilai ujian, dan performa akademik dari satu ruang kerja.</p>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+            <div class="date-pill" id="heroSemesterBadge">◷ Semester Ganjil · 2026</div>
+            <button class="btn btn-success student-only-block" id="openCertBtn" style="display: none;"> Cetak Sertifikat Kelulusan</button>
+          </div>
+        </section>
+
+        <!-- STATS ADMIN -->
+        <section class="stats admin-only-block">
+          <div class="card stat">
+            <div class="stat-top"><span>Total mahasiswa</span><span class="stat-icon">♙</span></div>
+            <div class="stat-value" id="totalValue">0</div>
+            <div class="stat-foot"><span class="up">●</span> Data aktif di kelas</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-top"><span>Rata-rata kelas</span><span class="stat-icon">⌁</span></div>
+            <div class="stat-value" id="averageValue">0.00</div>
+            <div class="stat-foot"><span class="up">↗</span> Termasuk 10% absensi</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-top"><span>Rata-rata hadir</span><span class="stat-icon">✓</span></div>
+            <div class="stat-value" id="avgAttendanceValue">0%</div>
+            <div class="stat-foot"><span class="up">●</span> Dari 16 total pertemuan</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-top"><span>Kelulusan</span><span class="stat-icon">✦</span></div>
+            <div class="stat-value" id="passValue">0%</div>
+            <div class="stat-foot"><span class="up">↑</span> Predikat A sampai C</div>
+          </div>
+        </section>
+
+        <!-- STATS MAHASISWA -->
+        <section class="stats student-only-block" style="display: none; grid-template-columns: repeat(4, 1fr);">
+          <div class="card stat">
+            <div class="stat-top"><span>Nilai Akhir (Bobot)</span><span class="stat-icon">✦</span></div>
+            <div class="stat-value" id="myFinalScore">0.00</div>
+            <div class="stat-foot"><span class="up">★</span> Akumulasi Absen & Ujian</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-top"><span>Kehadiran Anda</span><span class="stat-icon">✓</span></div>
+            <div class="stat-value" id="myAttendanceCount">0/16</div>
+            <div class="stat-foot" id="myAttendanceContrib">Poin absensi: +0.00</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-top"><span>Predikat & Status</span><span class="stat-icon">★</span></div>
+            <div class="stat-value" id="myGradeLetter">-</div>
+            <div class="stat-foot" id="myPassStatusText">Menunggu data</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-top"><span>Rincian Nilai</span><span class="stat-icon">▦</span></div>
+            <div class="stat-value" id="myBreakdown" style="font-size: 16px; margin-top: 16px; font-weight: 700;">0 | 0 | 0</div>
+            <div class="stat-foot">Tugas · UTS · UAS</div>
+          </div>
+        </section>
+
+        <section class="dashboard-grid admin-only-block">
+          <div class="card chart-card">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Distribusi nilai</h2>
+                <p class="panel-subtitle">Komposisi predikat mahasiswa saat ini</p>
+              </div>
+              <span class="date-pill">Live data</span>
+            </div>
+            <div class="chart" id="barChart"></div>
+            <div class="legend">
+              <span>A — unggul (≥85)</span>
+              <span>B — baik (≥70)</span>
+              <span>C — cukup (≥60)</span>
+              <span>D — tidak lulus (&lt;60)</span>
+            </div>
+          </div>
+
+          <div class="card insight-card">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Ringkasan kelas</h2>
+                <p class="panel-subtitle">Distribusi berdasarkan predikat</p>
+              </div>
+            </div>
+            <div class="donut-wrap">
+              <div class="donut" id="donut">
+                <div class="donut-center">
+                  <strong id="donutTotal">0</strong>
+                  <small>mahasiswa</small>
+                </div>
+              </div>
+            </div>
+            <div class="grade-list">
+              <div class="grade-row"><b>Predikat A</b><span id="countA">0 orang</span></div>
+              <div class="grade-row"><b>Predikat B</b><span id="countB">0 orang</span></div>
+              <div class="grade-row"><b>Predikat C</b><span id="countC">0 orang</span></div>
+              <div class="grade-row"><b>Predikat D</b><span id="countD">0 orang</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PANEL RINCIAN NILAI MAHASISWA -->
+        <section class="card student-only-block" style="display: none; margin-bottom: 20px;">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Rincian Komponen Nilai & Absensi Anda</h2>
+              <p class="panel-subtitle">Total 16 pertemuan (termasuk UTS & UAS)</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Komponen</th><th>Capaian / Nilai Mentah</th><th>Bobot Kelas</th><th>Kontribusi ke Nilai Akhir</th></tr>
+              </thead>
+              <tbody id="myDetailTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card table-card admin-only-block">
+          <div class="table-toolbar">
+            <div>
+              <h2 class="panel-title">Input terbaru</h2>
+              <p class="panel-subtitle">5 data absensi & penilaian terakhir yang masuk ke sistem</p>
+            </div>
+            <div class="toolbar-actions">
+              <button class="btn" onclick="switchPage('grades')">Lihat semua data →</button>
+              <button class="btn btn-primary open-add-modal">＋ Tambah data</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>No</th><th>Mahasiswa</th><th>Absensi (16)</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Nilai akhir</th><th>Predikat</th></tr>
+              </thead>
+              <tbody id="recentTableBody"></tbody>
+            </table>
+            <div class="empty" id="emptyOverview">
+              <strong>Belum ada data mahasiswa</strong>
+              Klik "Tambah data" untuk mulai menginput absensi dan nilai kelas.
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- VIEW 2: DATA NILAI & ABSENSI (ADMIN) -->
+      <div class="view-section" id="page-grades">
+        <section class="hero">
+          <div>
+            <div class="eyebrow">Manajemen Kehadiran & Penilaian</div>
+            <h1>Daftar nilai & absensi</h1>
+            <p id="weightBanner">Bobot aktif: Absensi 10% (16 Pertemuan) · Tugas 25% · UTS 30% · UAS 35%</p>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary open-add-modal">＋ Tambah mahasiswa</button>
+          </div>
+        </section>
+
+        <section class="card table-card">
+          <div class="table-toolbar">
+            <div>
+              <h2 class="panel-title">Semua data kelas (<span id="filteredCount">0</span>)</h2>
+              <p class="panel-subtitle">16 Total Pertemuan Terintegrasi (Absensi 10%)</p>
+            </div>
+            <div class="toolbar-actions">
+              <input class="search" id="searchInput" placeholder="⌕  Cari nama..." />
+              <select class="search" id="gradeFilter">
+                <option value="all">Semua predikat</option>
+                <option value="A">Predikat A</option>
+                <option value="B">Predikat B</option>
+                <option value="C">Predikat C</option>
+                <option value="D">Predikat D</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Mahasiswa</th>
+                  <th>Absensi (16)</th>
+                  <th>Tugas</th>
+                  <th>UTS</th>
+                  <th>UAS</th>
+                  <th>Nilai akhir</th>
+                  <th>Predikat</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+            <div class="empty" id="emptyGrades">
+              <strong>Data tidak ditemukan</strong>
+              Belum ada data yang sesuai dengan pencarian atau filter Anda.
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- VIEW 3: RIWAYAT (ADMIN) -->
+      <div class="view-section" id="page-history">
+        <section class="hero">
+          <div>
+            <div class="eyebrow">Audit & Log Aktivitas</div>
+            <h1>Riwayat perubahan</h1>
+            <p>Catatan kronologis setiap penambahan, pembaruan absensi/nilai, ekspor data, dan perubahan konfigurasi.</p>
+          </div>
+          <button class="btn btn-danger" id="clearHistoryBtn">Bersihkan riwayat</button>
+        </section>
+
+        <section class="card">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Log aktivitas sistem</h2>
+              <p class="panel-subtitle">Menampilkan hingga 50 aktivitas terakhir</p>
+            </div>
+          </div>
+          <div class="history-list" id="historyList"></div>
+          <div class="empty" id="emptyHistory">
+            <strong>Belum ada riwayat aktivitas</strong>
+            Setiap perubahan data nilai atau pengaturan akan tercatat di sini secara otomatis.
+          </div>
+        </section>
+      </div>
+
+      <!-- VIEW 4: PENGATURAN (ADMIN) -->
+      <div class="view-section" id="page-settings">
+        <section class="hero">
+          <div>
+            <div class="eyebrow">Konfigurasi Workspace</div>
+            <h1>Pengaturan kelas</h1>
+            <p>Sesuaikan identitas mata kuliah, pengelola kelas, dan persentase bobot penilaian.</p>
+          </div>
+        </section>
+
+        <div class="settings-grid">
+          <section class="card settings-card">
+            <h3>Identitas Kelas & Pengelola</h3>
+            <p>Informasi ini akan ditampilkan di sidebar, header laporan, dan sertifikat kelulusan.</p>
+            <form class="field-group" id="profileSettingsForm">
+              <div class="field">
+                <label for="setCourseName">Nama Mata Kuliah</label>
+                <input id="setCourseName" required />
+              </div>
+              <div class="field">
+                <label for="setSemester">Tahun / Semester</label>
+                <input id="setSemester" required />
+              </div>
+              <div class="field">
+                <label for="setManagerName">Nama Pengelola / Dosen</label>
+                <input id="setManagerName" required />
+              </div>
+              <div>
+                <button type="submit" class="btn btn-primary">Simpan identitas</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="card settings-card">
+            <h3>Bobot Komponen Nilai (%)</h3>
+            <p>Total keempat bobot (termasuk Absensi 16 pertemuan) harus berjumlah 100%.</p>
+            <form class="field-group" id="weightSettingsForm">
+              <div class="weight-row">
+                <div class="field">
+                  <label for="weightAttendance">Absensi (%)</label>
+                  <input id="weightAttendance" type="number" min="0" max="100" required />
+                </div>
+                <div class="field">
+                  <label for="weightTask">Tugas (%)</label>
+                  <input id="weightTask" type="number" min="0" max="100" required />
+                </div>
+                <div class="field">
+                  <label for="weightMid">UTS (%)</label>
+                  <input id="weightMid" type="number" min="0" max="100" required />
+                </div>
+                <div class="field">
+                  <label for="weightFinal">UAS (%)</label>
+                  <input id="weightFinal" type="number" min="0" max="100" required />
+                </div>
+              </div>
+              <div class="weight-summary">
+                <span>Total bobot saat ini:</span>
+                <strong id="weightTotalDisplay">100%</strong>
+              </div>
+              <div>
+                <button type="submit" class="btn btn-primary">Terapkan bobot baru</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="card settings-card" style="grid-column: 1 / -1;">
+            <h3>Zona Reset Data</h3>
+            <p>Hapus seluruh data mahasiswa dan kembalikan tabel ke kondisi kosong.</p>
+            <div class="toolbar-actions">
+              <button class="btn btn-danger" id="resetAllDataBtn">Hapus semua data mahasiswa</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL TAMBAH / EDIT MAHASISWA -->
+  <div class="modal-layer" id="modalLayer">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="modalTitle">Tambah mahasiswa baru</h2>
+        <button class="close" id="closeModal">×</button>
+      </div>
+      <form class="form" id="gradeForm">
+        <input type="hidden" id="editStudentId" />
+        <div>
+          <label for="nameInput">Nama mahasiswa</label>
+          <input id="nameInput" required placeholder="Contoh: Budi Santoso" />
+        </div>
+
+        <!-- INPUT ABSENSI 16 PERTEMUAN INTERAKTIF -->
+        <div class="att-box">
+          <div class="att-header">
+            <label style="margin:0;">Kehadiran (Pilih Pertemuan P1 s.d. P16)</label>
+            <span class="att-preview-pill" id="attScorePreview">16/16 (+10.00 poin)</span>
+          </div>
+          <div class="att-checks-16" id="attQuickGrid"></div>
+          <input type="hidden" id="attendanceInput" value="16" />
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <label for="taskInput">Tugas</label>
+            <input id="taskInput" type="number" min="0" max="100" step="0.1" required placeholder="0–100" />
+          </div>
+          <div>
+            <label for="midInput">UTS (Pert. 8)</label>
+            <input id="midInput" type="number" min="0" max="100" step="0.1" required placeholder="0–100" />
+          </div>
+          <div>
+            <label for="finalInput">UAS (Pert. 16)</label>
+            <input id="finalInput" type="number" min="0" max="100" step="0.1" required placeholder="0–100" />
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit" id="modalSubmitBtn">Simpan data</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL SERTIFIKAT KELULUSAN (MAHASISWA) -->
+  <div class="modal-layer" id="certModalLayer">
+    <div class="modal cert-modal">
+      <div class="modal-head no-print">
+        <h2>Pratinjau Sertifikat Kelulusan</h2>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn btn-primary" onclick="window.print()">🖨 Cetak / Simpan PDF</button>
+          <button class="close" id="closeCertModal">×</button>
+        </div>
+      </div>
+      <div class="cert-preview-wrap">
+        <div class="certificate-box">
+          <img src="image_6019b7.jpg" alt="Logo UNJ" class="cert-logo" />
+          <div class="cert-header">Universitas Negeri Jakarta — Academic Certification</div>
+          <div class="cert-main-title">SERTIFIKAT KELULUSAN</div>
+          <div class="cert-sub">Diberikan sebagai bukti penyelesaian dan pencapaian kompetensi akademik kepada:</div>
+          <div class="cert-student-name" id="certStudentName">Nama Mahasiswa</div>
+          <div class="cert-body">
+            Telah dinyatakan <strong>LULUS</strong> pada mata kuliah <strong id="certCourseName">Pendidikan Teknik Mesin</strong>
+            (<span id="certSemester">Semester Ganjil · 2026</span>) dengan rincian evaluasi sebagai berikut:
+          </div>
+          <div class="cert-metrics">
+            <div class="cert-metric-item">
+              <small>Kehadiran Total</small>
+              <strong id="certAttCount">16/16</strong>
+            </div>
+            <div class="cert-metric-item">
+              <small>Nilai Akhir (Bobot)</small>
+              <strong id="certFinalScore">0.00</strong>
+            </div>
+            <div class="cert-metric-item">
+              <small>Predikat Akhir</small>
+              <strong id="certGradeLetter" style="color:#16a477;">A</strong>
+            </div>
+          </div>
+          <div class="cert-footer">
+            <div style="text-align: left;">
+              <div>ID Verifikasi: <strong id="certVerifyId">GF-UNJ-2026-001</strong></div>
+              <div>Tanggal Terbit: <span id="certDate">-</span></div>
+            </div>
+            <div class="cert-sign">
+              <div>Dosen / Pengelola Kelas</div>
+              <div class="cert-sign-line"></div>
+              <strong id="certManagerName">Indaka Rahman</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const MAX_MEETINGS = 16; // 16 Total Pertemuan
+
+    let students = JSON.parse(localStorage.getItem("gradeflow_students") || "[]");
+    let historyLogs = JSON.parse(localStorage.getItem("gradeflow_history") || "[]");
+    let settings = JSON.parse(localStorage.getItem("gradeflow_settings") || "null");
+
+    if (!settings || settings.weights.attendance === undefined) {
+      settings = {
+        courseName: settings?.courseName || "Pendidikan Teknik Mesin",
+        semester: settings?.semester || "Semester Ganjil · 2026",
+        managerName: settings?.managerName || "Indaka Rahman",
+        weights: { attendance: 10, task: 25, mid: 30, final: 35 }
+      };
+    }
+
+    // Penyimpanan status hadir per pertemuan (array of booleans ukuran 16, default true semua)
+    students = students.map(s => {
+      let attArr = s.attArr;
+      if (!attArr || !Array.isArray(attArr) || attArr.length !== MAX_MEETINGS) {
+        const count = s.attendance !== undefined ? s.attendance : MAX_MEETINGS;
+        attArr = Array(MAX_MEETINGS).fill(false);
+        for(let i=0; i<count; i++) attArr[i] = true;
+      }
+      const presentCount = attArr.filter(Boolean).length;
+      return { ...s, attArr, attendance: presentCount, ...calculate(presentCount, s.task, s.mid, s.final) };
+    });
+
+    let currentUser = JSON.parse(localStorage.getItem("gradeflow_current_user") || "null");
+    let nextId = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
+    let selectedLoginRole = "admin";
+
+    function buildAttendanceGrid(attArr) {
+      const grid = $("attQuickGrid");
+      grid.innerHTML = "";
+      for (let i = 0; i < MAX_MEETINGS; i++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "att-check-btn" + (attArr[i] ? " present" : "");
+        btn.textContent = `P${i+1}`;
+        btn.title = `Klik untuk toggle hadir/tidak pada Pertemuan ${i+1}`;
+        btn.addEventListener("click", () => {
+          attArr[i] = !attArr[i];
+          buildAttendanceGrid(attArr);
+          updateAttendancePreviewFromArr(attArr);
+        });
+        grid.appendChild(btn);
+      }
+    }
+
+    function updateAttendancePreviewFromArr(attArr) {
+      const presentCount = attArr.filter(Boolean).length;
+      $("attendanceInput").value = presentCount;
+      const attScore = (presentCount / MAX_MEETINGS) * 100;
+      const contrib = attScore * (settings.weights.attendance / 100);
+      $("attScorePreview").textContent = `${presentCount}/16 (+${contrib.toFixed(2)} poin)`;
+    }
+
+    function setLoginRole(role) {
+      selectedLoginRole = role;
+      $("tabAdmin").classList.toggle("active", role === "admin");
+      $("tabStudent").classList.toggle("active", role === "student");
+      $("labelNameInput").textContent = role === "admin" ? "Nama Administrator" : "Nama Lengkap Anda";
+      $("loginName").value = role === "admin" ? "dakuy" : "";
+      $("loginName").placeholder = role === "admin" ? "Contoh: dakuy" : "Contoh: Indaka Rahman";
+      $("loginPassword").value = role === "admin" ? "admin123" : "mahasiswa123";
+    }
+
+    $("loginForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const inputName = $("loginName").value.trim();
+      const inputPass = $("loginPassword").value.trim();
+
+      if (selectedLoginRole === "admin") {
+        if (inputPass !== "admin123") return toast("Password admin salah (Gunakan: admin123)");
+        currentUser = { role: "admin", name: inputName || "Indaka Rahman", roleTitle: "Class manager" };
+      } else {
+        if (inputPass !== "mahasiswa123") return toast("Password mahasiswa salah (Gunakan: mahasiswa123)");
+        const matchedStudent = students.find(s => s.name.toLowerCase() === inputName.toLowerCase());
+        if (!matchedStudent) {
+          return toast(`Nama "${inputName}" tidak ditemukan di data kelas. Pastikan nama sesuai dengan yang diinput admin.`);
+        }
+        currentUser = { role: "student", name: matchedStudent.name, roleTitle: "Mahasiswa", data: matchedStudent };
+      }
+
+      localStorage.setItem("gradeflow_current_user", JSON.stringify(currentUser));
+      initAppSession();
+    });
+
+    $("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("gradeflow_current_user");
+      currentUser = null;
+      $("appScreen").style.display = "none";
+      $("authScreen").style.display = "grid";
+      setLoginRole("admin");
+      toast("Berhasil keluar dari akun.");
+    });
+
+    function initAppSession() {
+      if (!currentUser) {
+        $("authScreen").style.display = "grid";
+        $("appScreen").style.display = "none";
+        setLoginRole("admin");
+        return;
+      }
+
+      $("authScreen").style.display = "none";
+      $("appScreen").style.display = "flex";
+
+      const isAdmin = currentUser.role === "admin";
+      document.querySelectorAll(".admin-only").forEach(el => el.style.display = isAdmin ? "flex" : "none");
+      document.querySelectorAll(".admin-only-block").forEach(el => el.style.display = isAdmin ? "block" : "none");
+      document.querySelectorAll(".student-only-block").forEach(el => el.style.display = !isAdmin ? "" : "none");
+
+      $("userNameDisplay").textContent = currentUser.name;
+      $("userRoleDisplay").textContent = currentUser.roleTitle;
+      $("userAvatar").textContent = currentUser.name.trim().split(/\s+/).map(x => x[0]).join("").slice(0, 2).toUpperCase();
+
+      if (isAdmin) {
+        $("sidebarRoleSub").textContent = "UNJ OS";
+        $("navOverviewLabel").textContent = "Overview";
+        $("heroEyebrow").textContent = "UNJ Smart Academic Dashboard";
+        $("heroTitle").innerHTML = `Kelola performa kelas<br /><span style="color:var(--primary)">dengan lebih tenang.</span>`;
+        $("heroDesc").textContent = "Pantau kehadiran 16 pertemuan, nilai ujian, dan performa akademik dari satu ruang kerja.";
+        switchPage("overview");
+      } else {
+        $("sidebarRoleSub").textContent = "Student Portal";
+        $("navOverviewLabel").textContent = "Rekap Nilai";
+        const fresh = students.find(s => s.name.toLowerCase() === currentUser.name.toLowerCase());
+        if (fresh) currentUser.data = fresh;
+        renderStudentPortal();
+        switchPage("overview");
+      }
+      renderAll();
+    }
+
+    function switchPage(pageKey) {
+      document.querySelectorAll(".nav-item").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.page === pageKey);
+      });
+      document.querySelectorAll(".view-section").forEach(sec => {
+        sec.classList.toggle("active", sec.id === `page-${pageKey}`);
+      });
+      const titles = {
+        overview: currentUser?.role === "admin" ? "Overview" : "Rekap Nilai Saya",
+        grades: "Data nilai & absen",
+        history: "Riwayat",
+        settings: "Pengaturan"
+      };
+      $("crumbTitle").textContent = titles[pageKey] || "Overview";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.querySelectorAll(".nav-item").forEach(btn => {
+      btn.addEventListener("click", () => switchPage(btn.dataset.page));
+    });
+
+    function calculate(attendanceCount, task, mid, final) {
+      const w = settings.weights;
+      const attScore = (attendanceCount / MAX_MEETINGS) * 100;
+      const score = (attScore * (w.attendance / 100)) +
+                    (task * (w.task / 100)) +
+                    (mid * (w.mid / 100)) +
+                    (final * (w.final / 100));
+      const grade = score >= 85 ? "A" : score >= 70 ? "B" : score >= 60 ? "C" : "D";
+      return { attScore, score, grade };
+    }
+
+    function saveAll() {
+      localStorage.setItem("gradeflow_students", JSON.stringify(students));
+      localStorage.setItem("gradeflow_history", JSON.stringify(historyLogs));
+      localStorage.setItem("gradeflow_settings", JSON.stringify(settings));
+    }
+
+    function addHistory(type, title, desc) {
+      const now = new Date();
+      const timeStr = now.toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) + " · " +
+                      now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+      historyLogs.unshift({ type, title, desc, time: timeStr });
+      if (historyLogs.length > 50) historyLogs.pop();
+    }
+
+    function initials(name) {
+      return name.trim().split(/\s+/).map(x => x[0]).join("").slice(0, 2).toUpperCase() || "M";
+    }
+
+    function toast(message) {
+      const el = $("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2600);
+    }
+
+    function applySettingsUI() {
+      $("sidebarClassInfo").textContent = `${settings.courseName} · ${settings.semester.replace(/\D/g, "") || "2026"}`;
+      $("heroSemesterBadge").textContent = `◷ ${settings.semester}`;
+      $("weightBanner").textContent = `Bobot aktif: Absensi ${settings.weights.attendance}% (16 Pertemuan) · Tugas ${settings.weights.task}% · UTS ${settings.weights.mid}% · UAS ${settings.weights.final}%`;
+
+      if (currentUser?.role === "admin") {
+        $("setCourseName").value = settings.courseName;
+        $("setSemester").value = settings.semester;
+        $("setManagerName").value = settings.managerName;
+        $("weightAttendance").value = settings.weights.attendance;
+        $("weightTask").value = settings.weights.task;
+        $("weightMid").value = settings.weights.mid;
+        $("weightFinal").value = settings.weights.final;
+        updateWeightPreview();
+      }
+    }
+
+    function renderStudentPortal() {
+      if (!currentUser || currentUser.role !== "student") return;
+      const student = students.find(s => s.name.toLowerCase() === currentUser.name.toLowerCase());
+      const certBtn = $("openCertBtn");
+
+      if (!student) {
+        $("myFinalScore").textContent = "0.00";
+        $("myAttendanceCount").textContent = "0/16";
+        $("myAttendanceContrib").textContent = "Poin absensi: +0.00";
+        $("myGradeLetter").textContent = "-";
+        $("myPassStatusText").textContent = "Data tidak ditemukan";
+        $("myBreakdown").textContent = "-";
+        certBtn.style.display = "none";
+        $("myDetailTableBody").innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--danger);">Data nilai untuk nama "${currentUser.name}" belum diinput oleh admin.</td></tr>`;
+        return;
+      }
+
+      currentUser.data = student;
+      const isPassed = ["A", "B", "C"].includes(student.grade);
+      const w = settings.weights;
+      const attPct = ((student.attendance / MAX_MEETINGS) * 100).toFixed(0);
+      const attContrib = (student.attScore * (w.attendance / 100)).toFixed(2);
+      const tContrib = (student.task * (w.task / 100)).toFixed(2);
+      const mContrib = (student.mid * (w.mid / 100)).toFixed(2);
+      const fContrib = (student.final * (w.final / 100)).toFixed(2);
+
+      // Buat string pertemuan yang hadir misal: P1, P4, P16
+      const presentList = student.attArr.map((v, idx) => v ? `P${idx+1}` : null).filter(Boolean).join(", ") || "Tidak ada";
+
+      $("heroEyebrow").textContent = "UNJ Student Portal";
+      $("heroTitle").innerHTML = `Halo, <span style="color:var(--primary)">${student.name}!</span>`;
+      $("heroDesc").textContent = `Berikut adalah rekapitulasi kehadiran dan hasil penilaian akademik Anda untuk mata kuliah ${settings.courseName}.`;
+
+      $("myFinalScore").textContent = student.score.toFixed(2);
+      $("myAttendanceCount").textContent = `${student.attendance}/16`;
+      $("myAttendanceContrib").innerHTML = `<span class="up">● ${attPct}%</span> (+${attContrib} poin)`;
+      $("myGradeLetter").textContent = student.grade;
+      $("myGradeLetter").style.color = isPassed ? "var(--success)" : "var(--danger)";
+      $("myPassStatusText").innerHTML = isPassed
+        ? `<span class="up">● LULUS (Predikat ${student.grade})</span>`
+        : `<span class="down">● TIDAK LULUS (Predikat D)</span>`;
+      $("myBreakdown").textContent = `${student.task} | ${student.mid} | ${student.final}`;
+
+      if (isPassed) {
+        certBtn.style.display = "inline-flex";
+      } else {
+        certBtn.style.display = "none";
+      }
+
+      $("myDetailTableBody").innerHTML = `
+        <tr><td><strong>Absensi Total (16 Pertemuan)</strong><br/><small style="color:var(--muted)">Hadir: ${presentList}</small></td><td>${student.attendance} / 16 Hadir (${attPct}%)</td><td>${w.attendance}%</td><td><strong>+${attContrib}</strong></td></tr>
+        <tr><td><strong>Tugas Mandiri</strong></td><td>${student.task.toFixed(1)}</td><td>${w.task}%</td><td><strong>+${tContrib}</strong></td></tr>
+        <tr><td><strong>Ujian Tengah Semester (UTS)</strong></td><td>${student.mid.toFixed(1)}</td><td>${w.mid}%</td><td><strong>+${mContrib}</strong></td></tr>
+        <tr><td><strong>Ujian Akhir Semester (UAS)</strong></td><td>${student.final.toFixed(1)}</td><td>${w.final}%</td><td><strong>+${fContrib}</strong></td></tr>
+        <tr style="background:var(--surface-soft); font-weight:bold;">
+          <td>Total Nilai Akhir & Status Kelulusan</td>
+          <td>-</td>
+          <td>100%</td>
+          <td style="color:${isPassed ? 'var(--success)' : 'var(--danger)'}; font-size:13px;">
+            ${student.score.toFixed(2)} · Predikat ${student.grade} (${isPassed ? "LULUS" : "TIDAK LULUS"})
+          </td>
+        </tr>
+      `;
+    }
+
+    $("openCertBtn").addEventListener("click", () => {
+      if (!currentUser || currentUser.role !== "student" || !currentUser.data) return;
+      const st = currentUser.data;
+      const attPct = ((st.attendance / MAX_MEETINGS) * 100).toFixed(0);
+
+      $("certStudentName").textContent = st.name;
+      $("certCourseName").textContent = settings.courseName;
+      $("certSemester").textContent = settings.semester;
+      $("certAttCount").textContent = `${st.attendance}/16 (${attPct}%)`;
+      $("certFinalScore").textContent = st.score.toFixed(2);
+      $("certGradeLetter").textContent = `${st.grade} (LULUS)`;
+      $("certManagerName").textContent = settings.managerName;
+      $("certVerifyId").textContent = `GF-UNJ-${new Date().getFullYear()}-00${st.id}`;
+      $("certDate").textContent = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+
+      $("certModalLayer").classList.add("show");
+    });
+
+    $("closeCertModal").addEventListener("click", () => $("certModalLayer").classList.remove("show"));
+    $("certModalLayer").addEventListener("click", e => {
+      if (e.target === $("certModalLayer")) $("certModalLayer").classList.remove("show");
+    });
+
+    function filteredStudents() {
+      const query = $("searchInput") ? $("searchInput").value.toLowerCase().trim() : "";
+      const grade = $("gradeFilter") ? $("gradeFilter").value : "all";
+      return students.filter(s => s.name.toLowerCase().includes(query) && (grade === "all" || s.grade === grade));
+    }
+
+    function renderTables() {
+      if (currentUser?.role !== "admin") return;
+      const body = $("tableBody");
+      const visible = filteredStudents();
+      body.innerHTML = "";
+      $("filteredCount").textContent = visible.length;
+      $("emptyGrades").style.display = visible.length ? "none" : "block";
+
+      visible.forEach((s, index) => {
+        const attPts = (s.attScore * (settings.weights.attendance / 100)).toFixed(1);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td><div class="student"><span class="student-avatar">${initials(s.name)}</span>${s.name}</div></td>
+          <td><span class="att-badge">${s.attendance}/16 (+${attPts})</span></td>
+          <td>${s.task.toFixed(1)}</td>
+          <td>${s.mid.toFixed(1)}</td>
+          <td>${s.final.toFixed(1)}</td>
+          <td class="score">${s.score.toFixed(2)}</td>
+          <td><span class="grade grade-${s.grade}">${s.grade}</span></td>
+          <td>
+            <div class="action-group">
+              <button class="action-btn edit" data-id="${s.id}" title="Edit absensi & nilai">✎</button>
+              <button class="action-btn delete" data-id="${s.id}" title="Hapus data">⌫</button>
+            </div>
+          </td>
+        `;
+        body.appendChild(row);
+      });
+
+      const recentBody = $("recentTableBody");
+      const recentList = [...students].reverse().slice(0, 5);
+      recentBody.innerHTML = "";
+      $("emptyOverview").style.display = recentList.length ? "none" : "block";
+
+      recentList.forEach((s, index) => {
+        const attPts = (s.attScore * (settings.weights.attendance / 100)).toFixed(1);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td><div class="student"><span class="student-avatar">${initials(s.name)}</span>${s.name}</div></td>
+          <td><span class="att-badge">${s.attendance}/16 (+${attPts})</span></td>
+          <td>${s.task.toFixed(1)}</td>
+          <td>${s.mid.toFixed(1)}</td>
+          <td>${s.final.toFixed(1)}</td>
+          <td class="score">${s.score.toFixed(2)}</td>
+          <td><span class="grade grade-${s.grade}">${s.grade}</span></td>
+        `;
+        recentBody.appendChild(row);
+      });
+    }
+
+    function renderStats() {
+      const total = students.length;
+      const scores = students.map(s => s.score);
+      const average = total ? scores.reduce((a, b) => a + b, 0) / total : 0;
+      const avgAttPct = total ? students.reduce((acc, s) => acc + ((s.attendance / MAX_MEETINGS) * 100), 0) / total : 0;
+      const passed = total ? (students.filter(s => s.grade !== "D").length / total) * 100 : 0;
+
+      if (currentUser?.role === "admin") {
+        $("totalValue").textContent = total;
+        $("averageValue").textContent = average.toFixed(2);
+        $("avgAttendanceValue").textContent = `${avgAttPct.toFixed(0)}%`;
+        $("passValue").textContent = `${passed.toFixed(0)}%`;
+        $("donutTotal").textContent = total;
+        $("sidebarProgress").style.width = total ? `${Math.min(100, Math.max(15, passed))}%` : "10%";
+
+        const counts = ["A", "B", "C", "D"].map(g => students.filter(s => s.grade === g).length);
+        ["A", "B", "C", "D"].forEach((g, i) => $("count" + g).textContent = `${counts[i]} orang`);
+
+        if (total === 0) {
+          $("donut").style.background = "var(--line)";
+        } else {
+          const colors = ["#16a477", "#6759e8", "#d18a13", "#d84e68"];
+          const degrees = counts.map(x => (x / total) * 360);
+          let start = 0;
+          const stops = degrees.map((degree, i) => {
+            const part = `${colors[i]} ${start}deg ${start + degree}deg`;
+            start += degree;
+            return part;
+          });
+          $("donut").style.background = `conic-gradient(${stops.join(",")})`;
+        }
+
+        const chart = $("barChart");
+        const max = Math.max(...counts, 1);
+        const labels = ["A", "B", "C", "D"];
+        chart.innerHTML = labels.map((label, i) => {
+          const heightPx = counts[i] === 0 ? 6 : Math.max(14, Math.round((counts[i] / max) * 135));
+          return `
+            <div class="bar-wrap">
+              <div>
+                <div class="bar" style="height:${heightPx}px" title="Predikat ${label}: ${counts[i]} mahasiswa"></div>
+                <div class="bar-label">${label} (${counts[i]})</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } else {
+        $("sidebarProgress").style.width = currentUser?.data ? "100%" : "20%";
+      }
+    }
+
+    function renderHistory() {
+      if (currentUser?.role !== "admin") return;
+      const container = $("historyList");
+      $("emptyHistory").style.display = historyLogs.length ? "none" : "block";
+      container.innerHTML = historyLogs.map(item => {
+        const iconMap = { add: "＋", edit: "✎", del: "−", sys: "⚙" };
+        return `
+          <div class="history-item">
+            <div class="history-left">
+              <div class="history-badge badge-${item.type}">${iconMap[item.type] || "•"}</div>
+              <div>
+                <div class="history-title">${item.title}</div>
+                <div class="history-desc">${item.desc}</div>
+              </div>
+            </div>
+            <div class="history-time">${item.time}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderAll() {
+      applySettingsUI();
+      if (currentUser?.role === "admin") {
+        renderTables();
+        renderStats();
+        renderHistory();
+      } else {
+        renderStudentPortal();
+        renderStats();
+      }
+    }
+
+    function openModal(student = null) {
+      if (currentUser?.role !== "admin") return;
+      let currentAttArr;
+      if (student && student.attArr) {
+        $("modalTitle").textContent = "Edit absensi & nilai mahasiswa";
+        $("modalSubmitBtn").textContent = "Simpan perubahan";
+        $("editStudentId").value = student.id;
+        $("nameInput").value = student.name;
+        $("taskInput").value = student.task;
+        $("midInput").value = student.mid;
+        $("finalInput").value = student.final;
+        currentAttArr = [...student.attArr];
+      } else {
+        $("modalTitle").textContent = "Tambah mahasiswa baru";
+        $("modalSubmitBtn").textContent = "Simpan data";
+        $("gradeForm").reset();
+        $("editStudentId").value = "";
+        currentAttArr = Array(MAX_MEETINGS).fill(true); // Default hadir semua
+      }
+      buildAttendanceGrid(currentAttArr);
+      updateAttendancePreviewFromArr(currentAttArr);
+      $("modalLayer").classList.add("show");
+      $("nameInput").focus();
+    }
+
+    document.querySelectorAll(".open-add-modal").forEach(btn => {
+      btn.addEventListener("click", () => openModal());
+    });
+    $("closeModal").addEventListener("click", () => $("modalLayer").classList.remove("show"));
+    $("modalLayer").addEventListener("click", e => {
+      if (e.target === $("modalLayer")) $("modalLayer").classList.remove("show");
+    });
+
+    $("gradeForm").addEventListener("submit", e => {
+      e.preventDefault();
+      if (currentUser?.role !== "admin") return;
+      const editId = $("editStudentId").value;
+      const name = $("nameInput").value.trim();
+      
+      // Kumpulkan status tombol P1-P16 yang aktif (hijau)
+      const attButtons = document.querySelectorAll(".att-check-btn");
+      const attArr = Array.from(attButtons).map(b => b.classList.contains("present"));
+      const attendanceCount = attArr.filter(Boolean).length;
+
+      const task = Number($("taskInput").value);
+      const mid = Number($("midInput").value);
+      const final = Number($("finalInput").value);
+
+      if (!name || [task, mid, final].some(v => Number.isNaN(v) || v < 0 || v > 100)) {
+        return toast("Pastikan nama dan nilai (0–100) diisi dengan benar.");
+      }
+
+      const result = calculate(attendanceCount, task, mid, final);
+
+      if (editId) {
+        const idx = students.findIndex(s => s.id === Number(editId));
+        if (idx >= 0) {
+          students[idx] = { ...students[idx], name, attArr, attendance: attendanceCount, task, mid, final, ...result };
+          addHistory("edit", `Memperbarui data ${name}`, `Hadir: ${attendanceCount}/16 · Nilai akhir: ${result.score.toFixed(2)} (Predikat ${result.grade})`);
+          toast(`Data ${name} berhasil diperbarui.`);
+        }
+      } else {
+        students.push({ id: nextId++, name, attArr, attendance: attendanceCount, task, mid, final, ...result });
+        addHistory("add", `Menambahkan ${name}`, `Hadir: ${attendanceCount}/16 · Tugas: ${task} · UTS: ${mid} · UAS: ${final} → Akhir: ${result.score.toFixed(2)} (${result.grade})`);
+        toast(`${name} berhasil ditambahkan.`);
+      }
+
+      saveAll();
+      renderAll();
+      e.target.reset();
+      $("modalLayer").classList.remove("show");
+    });
+
+    $("tableBody").addEventListener("click", e => {
+      if (currentUser?.role !== "admin") return;
+      const delBtn = e.target.closest(".delete");
+      const editBtn = e.target.closest(".edit");
+
+      if (delBtn) {
+        const index = students.findIndex(s => s.id === Number(delBtn.dataset.id));
+        if (index >= 0) {
+          const removed = students[index];
+          students.splice(index, 1);
+          addHistory("del", `Menghapus ${removed.name}`, `Data dengan nilai akhir ${removed.score.toFixed(2)} dihapus.`);
+          saveAll();
+          renderAll();
+          toast(`${removed.name} dihapus dari daftar.`);
+        }
+      } else if (editBtn) {
+        const student = students.find(s => s.id === Number(editBtn.dataset.id));
+        if (student) openModal(student);
+      }
+    });
+
+    if ($("searchInput")) $("searchInput").addEventListener("input", renderTables);
+    if ($("gradeFilter")) $("gradeFilter").addEventListener("change", renderTables);
+
+    if ($("profileSettingsForm")) {
+      $("profileSettingsForm").addEventListener("submit", e => {
+        e.preventDefault();
+        if (currentUser?.role !== "admin") return;
+        settings.courseName = $("setCourseName").value.trim();
+        settings.semester = $("setSemester").value.trim();
+        settings.managerName = $("setManagerName").value.trim();
+        addHistory("sys", "Memperbarui identitas kelas", `${settings.courseName} (${settings.semester})`);
+        saveAll();
+        renderAll();
+        toast("Identitas kelas berhasil disimpan.");
+      });
+    }
+
+    function updateWeightPreview() {
+      const total = Number($("weightAttendance").value) + Number($("weightTask").value) + Number($("weightMid").value) + Number($("weightFinal").value);
+      const display = $("weightTotalDisplay");
+      if (display) {
+        display.textContent = `${total}%`;
+        display.style.color = total === 100 ? "var(--success)" : "var(--danger)";
+      }
+    }
+    ["weightAttendance", "weightTask", "weightMid", "weightFinal"].forEach(id => {
+      if ($(id)) $(id).addEventListener("input", updateWeightPreview);
+    });
+
+    if ($("weightSettingsForm")) {
+      $("weightSettingsForm").addEventListener("submit", e => {
+        e.preventDefault();
+        if (currentUser?.role !== "admin") return;
+        const attendance = Number($("weightAttendance").value);
+        const task = Number($("weightTask").value);
+        const mid = Number($("weightMid").value);
+        const final = Number($("weightFinal").value);
+
+        if (attendance + task + mid + final !== 100) {
+          return toast("Total bobot Absensi, Tugas, UTS, dan UAS harus tepat 100%.");
+        }
+
+        settings.weights = { attendance, task, mid, final };
+        students = students.map(s => ({ ...s, ...calculate(s.attendance, s.task, s.mid, s.final) }));
+        addHistory("sys", "Mengubah bobot penilaian", `Absensi ${attendance}% · Tugas ${task}% · UTS ${mid}% · UAS ${final}%`);
+        saveAll();
+        renderAll();
+        toast("Bobot baru diterapkan & seluruh nilai dihitung ulang.");
+      });
+    }
+
+    if ($("clearHistoryBtn")) {
+      $("clearHistoryBtn").addEventListener("click", () => {
+        historyLogs = [];
+        saveAll();
+        renderHistory();
+        toast("Riwayat aktivitas dibersihkan.");
+      });
+    }
+
+    if ($("resetAllDataBtn")) {
+      $("resetAllDataBtn").addEventListener("click", () => {
+        if (!students.length) return toast("Data mahasiswa sudah kosong.");
+        students = [];
+        nextId = 1;
+        addHistory("del", "Mereset seluruh data mahasiswa", "Semua data penilaian kelas dihapus.");
+        saveAll();
+        renderAll();
+        toast("Semua data mahasiswa telah dihapus.");
+      });
+    }
+
+    if ($("exportBtn")) {
+      $("exportBtn").addEventListener("click", () => {
+        if (!students.length) return toast("Belum ada data untuk diekspor.");
+        const rows = [
+          ["Nama", "Kehadiran (dari 16)", "Pertemuan Hadir", "Persentase Absen", "Tugas", "UTS", "UAS", "Nilai Akhir", "Predikat"],
+          ...students.map(s => [
+            s.name,
+            `${s.attendance}/16`,
+            s.attArr.map((v, idx) => v ? `P${idx+1}` : null).filter(Boolean).join(", "),
+            `${((s.attendance / MAX_MEETINGS) * 100).toFixed(0)}%`,
+            s.task,
+            s.mid,
+            s.final,
+            s.score.toFixed(2),
+            s.grade
+          ])
+        ];
+        const csv = rows.map(row => row.map(cell => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+        link.download = `nilai-absensi-${settings.courseName.toLowerCase().replace(/\s+/g, "-")}.csv`;
+        link.click();
+        if (currentUser?.role === "admin") {
+          addHistory("sys", "Mengekspor data ke CSV", `${students.length} data absensi & nilai diunduh.`);
+          saveAll();
+          renderHistory();
+        }
+        toast("Data absensi & nilai berhasil diekspor ke CSV.");
+      });
+    }
+
+    $("themeBtn").addEventListener("click", () => {
+      const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
+      document.body.dataset.theme = nextTheme;
+      localStorage.setItem("gradeflow_theme", nextTheme);
+    });
+    if (localStorage.getItem("gradeflow_theme") === "dark") document.body.dataset.theme = "dark";
+
+    initAppSession();
+  </script>
+</body>
+</html>
